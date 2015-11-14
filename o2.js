@@ -18,6 +18,11 @@ var showNodes = function(nodes){
     mb.window.send('getNodes', nodes);
 };
 
+var showFiles = function(files){
+    "use strict";
+    mb.window.send('getFiles', files);
+};
+
 mb.on('ready', function ready () {
     "use strict";
     ipc.on('did-finish-load',function(){
@@ -25,20 +30,21 @@ mb.on('ready', function ready () {
             var json = JSON.parse(data.toString());
             showNodes(json.data);
         });
+        console.log('Starting file list');
+        var path = '/usr/local/etc/';
+
+        var theFiles = fs.readdir(path).then(function(files) {
+          var onlyFiles = [];
+          for (var i = 0; i < files.length; i++) {
+            if(!fs.statSync(path+files[i]).isDirectory()) {
+              onlyFiles.push(path+files[i]);
+            }
+          }
+          return onlyFiles;
+        }).then(function(files) {
+          showFiles(files);
+        });
     });
-
-    console.log('Starting file list');
-    var path = '/Users/chriswisecarver/Dropbox/cos-dev/';
-
-    var theFiles = fs.readdir(path).then(function(files) {
-      var onlyFiles = [];
-      for (var i = 0; i < files.length; i++) {
-        if(!fs.statSync(path+files[i]).isDirectory()) {
-          onlyFiles.push(path+files[i]);
-        }
-      }
-      return onlyFiles;
-    }).then(function(files) { console.log(files);});
 
     ipc.on('exit', function() {
         app.quit();
