@@ -5,13 +5,15 @@
   "repository": "https://github.com/brianjgeiger/o2",
   "author": "Center for Open Science",
   "dependencies": {
+    "bootstrap": "^3.3.5",
+    "font-awesome": "^4.4.0",
+    "fs-promise": "^0.3.1",
+    "jquery": "^2.1.4",
+    "jsdom": "^3.1.2",
+    "knockout": "^3.3.0",
     "menubar": "*",
     "node-rest-client": "^1.5.1",
-    "knockout": "^3.3.0",
-    "font-awesome": "^4.4.0",
-    "bootstrap": "^3.3.5",
-    "jquery": "^2.1.4",
-    "jsdom": "^3.1.2"
+    "promise": "^7.0.4"
   },
   "devDependencies": {
     "electron-packager": "^5.1.0",
