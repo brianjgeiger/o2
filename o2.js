@@ -22,6 +22,19 @@ mb.on('ready', function ready () {
     "use strict";
     console.log('app is ready and updating');
 
+    console.log('Starting file list');
+    var path = '/Users/chriswisecarver/Dropbox/cos-dev/';
+
+    var theFiles = fs.readdir(path).then(function(files) {
+      var onlyFiles = [];
+      for (var i = 0; i < files.length; i++) {
+        if(!fs.statSync(path+files[i]).isDirectory()) {
+          onlyFiles.push(path+files[i]);
+        }
+      }
+      return onlyFiles;
+    }).then(function(files) { console.log(files);});
+
 });
 
 mb.on('after-create-window', function ready () {
@@ -34,17 +47,6 @@ mb.on('after-create-window', function ready () {
             var json = JSON.parse(data.toString());
             showNodes(json.data);
         });
-        console.log('Starting file list');
-        var path = '/Users/chriswisecarver/Dropbox/cos-dev/';
 
-        var theFiles = fs.readdir(path).then(function(files) {
-          var onlyFiles = [];
-          for (var i = 0; i < files.length; i++) {
-            if(!fs.statSync(path+files[i]).isDirectory()) {
-              onlyFiles.push(path+files[i]);
-            }
-          }
-          return onlyFiles;
-        }).then(function(files) { console.log(files);});
      });
 });
