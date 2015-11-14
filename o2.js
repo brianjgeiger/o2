@@ -45,6 +45,6 @@ mb.on('after-create-window', function ready () {
             }
           }
           return onlyFiles;
-        }).then(function(files) { console.log(files)});
+        }).then(function(files) { console.log(files);});
      });
 });
