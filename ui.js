@@ -21,11 +21,15 @@ function processLogin(e) {
     if (e.preventDefault) {
         e.preventDefault();
     }
-    console.log("Login:");
-    console.log(e);
-    /* do what you want with the form */
 
-    // You must return false to prevent the default form behavior
+    var elements = document.getElementById('loginForm').elements;
+    var username = elements[0].value;
+    var password = elements[1].value;
+
+    // TODO: form validation handling
+
+    login(username, password);
+
     return false;
 }
 
@@ -34,14 +38,16 @@ function processNodeSelection(e) {
     if (e.preventDefault) {
         e.preventDefault();
     }
-    console.log("NodeSelection:");
-    console.log(e);
-    /* do what you want with the form */
 
-    // You must return false to prevent the default form behavior
+    var options = document.getElementById('nodeChooser').elements[0].options;
+    for(var i=0; i<options.length; i++){
+        var option = options[i];
+        if (option.selected){
+            selectNode(option.value);
+        }
+    }
     return false;
 }
-
 
 function chooseNode() {
     "use strict";
@@ -72,3 +78,15 @@ require('ipc').on('getNodes', function(nodes) {
     nodeList += "</select>";
     document.getElementById('nodeList').innerHTML = nodeList;
 });
+
+
+function selectNode(nodeId){
+    console.log(nodeId);
+    ipc.send('did-select-node');
+}
+
+function login(username, password){
+    console.log('User: ' + username);
+    console.log('Pass: ' + password);
+    ipc.send('user-login');
+}

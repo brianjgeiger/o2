@@ -74,6 +74,12 @@ mb.on('ready', function ready () {
     ipc.on('exit', function() {
         app.quit();
     });
+
+    ipc.on('did-select-node', function() {
+        console.log('Node selected');
+    });
+
+
     console.log('app is ready and updating');
 });
 
