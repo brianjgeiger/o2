@@ -8,10 +8,8 @@ var app = require('app');
 var mbOptions = {"width": 1000, "height": 800};
 
 var mb = menuBar(mbOptions);
-var client = new Client();
 var webContents = null;
-client.registerMethod("nodes", "https://staging-api.osf.io/v2/nodes/", "GET");
-client.registerMethod("my_nodes", "https://staging-api.osf.io/v2/users/me/nodes/?page[size]=100", "GET");
+
 
 var showNodes = function(nodes){
     "use strict";
@@ -23,13 +21,33 @@ var showFiles = function(files){
     mb.window.send('getFiles', files);
 };
 
+var setupClient = function (username, password) {
+  var client;
+  if((username === null) && (password === null)) {
+    client = new Client();
+  } else {
+    var options_auth = { user: username, password: password };
+    client = new Client(options_auth);
+  }
+  client.registerMethod("nodes", "https://staging-api.osf.io/v2/nodes/", "GET");
+  client.registerMethod("my_nodes", "https://staging-api.osf.io/v2/users/me/nodes/?page[size]=100", "GET");
+  mb.window._client = client;
+};
+
+var getNodes = function () {
+  if(!mb.window._client) {
+    setupClient();
+  }
+  mb.window._client.methods.nodes(function(data, response) {
+    var json = JSON.parse(data.toString());
+    showNodes(json.data);
+  });
+};
+
 mb.on('ready', function ready () {
     "use strict";
     ipc.on('did-finish-load',function(){
-        client.methods.nodes(function(data, response) {
-            var json = JSON.parse(data.toString());
-            showNodes(json.data);
-        });
+        getNodes();
         console.log('Starting file list');
         var path = process.cwd();
 
