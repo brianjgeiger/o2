@@ -75,6 +75,10 @@ mb.on('ready', function ready () {
         app.quit();
     });
 
+    ipc.on('sync', function() {
+        console.log("We should sync");
+    });
+
     ipc.on('did-select-node', function() {
         console.log('Node selected');
     });
