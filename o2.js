@@ -31,13 +31,20 @@ mb.on('ready', function ready () {
             showNodes(json.data);
         });
         console.log('Starting file list');
-        var path = '/usr/local/etc/';
+        var path = process.cwd();
+
+        // readdir requires a trailing slash.
+        if (path.substr(path.length-1) != '/') {
+          path = path + '/';
+        }
 
         var theFiles = fs.readdir(path).then(function(files) {
-          var onlyFiles = [];
+          var onlyFiles = {};
           for (var i = 0; i < files.length; i++) {
-            if(!fs.statSync(path+files[i]).isDirectory()) {
-              onlyFiles.push(path+files[i]);
+            var filePath = path + files[i];
+            var fileStat = fs.statSync(filePath);
+            if(!fileStat.isDirectory()) {
+              onlyFiles[path+files[i]] = {'stat': fileStat, 'sha': null};
             }
           }
           return onlyFiles;

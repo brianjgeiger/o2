@@ -53,10 +53,12 @@ function chooseNode() {
 require('ipc').on('getFiles', function(files) {
   var fileList = document.createElement('ul');
   fileList.className = 'a-list';
-  for (var i = 0; i < files.length; i++) {
-    var fileItem = document.createElement('li');
-    fileItem.innerHTML = files[i];
-    fileList.appendChild(fileItem);
+  for (var key in files) {
+    if (files.hasOwnProperty(key)) {
+      var fileItem = document.createElement('li');
+      fileItem.innerHTML = key;
+      fileList.appendChild(fileItem);
+    }
   }
   document.getElementsByClassName('window-content')[0].appendChild(fileList);
 });
