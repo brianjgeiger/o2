@@ -1,0 +1,25 @@
+{
+  "name": "O2",
+  "version": "0.0.0",
+  "description": "Simple remote file sync for Open Science Framework",
+  "repository": "https://github.com/brianjgeiger/o2",
+  "author": "Center for Open Science",
+  "dependencies": {
+    "menubar": "*",
+    "node-rest-client": "^1.5.1",
+    "knockout": "^3.3.0",
+    "font-awesome": "^4.4.0",
+    "bootstrap": "^3.3.5",
+    "jquery": "^2.1.4",
+    "jsdom": "^3.1.2"
+  },
+  "devDependencies": {
+    "electron-packager": "^5.1.0",
+    "electron-prebuilt": "^0.34.1"
+  },
+  "main": "o2.js",
+  "scripts": {
+    "build": "electron-packager . Example --platform=darwin --arch=x64 --version=0.34.1 --icon=Icon.icns",
+    "start": "electron ."
+  }
+}
