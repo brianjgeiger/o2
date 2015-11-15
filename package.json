@@ -6,6 +6,7 @@
   "author": "Center for Open Science",
   "dependencies": {
     "bootstrap": "^3.3.5",
+    "fold-to-ascii": "^2.0.2",
     "font-awesome": "^4.4.0",
     "fs-promise": "^0.3.1",
     "jquery": "^2.1.4",
@@ -13,7 +14,9 @@
     "knockout": "^3.3.0",
     "menubar": "*",
     "node-rest-client": "^1.5.1",
-    "promise": "^7.0.4"
+    "promise": "^7.0.4",
+    "sanitize-filename": "^1.5.3",
+    "underscore": "^1.8.3"
   },
   "devDependencies": {
     "electron-packager": "^5.1.0",
