@@ -57,6 +57,8 @@ var getNodes = function () {
   });
 };
 
+
+
 mb.on('ready', function ready () {
     "use strict";
     ipc.on('did-finish-load',function(){
@@ -90,10 +92,12 @@ mb.on('ready', function ready () {
 
     ipc.on('sync', function() {
         console.log("We should sync");
+        mb.window.send('addStatusMessage', "Syncing now…");
     });
 
     ipc.on('did-select-node', function() {
         console.log('Node selected');
+        mb.window.send('setNodeLoc', true);
     });
 
 
