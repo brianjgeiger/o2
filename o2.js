@@ -64,7 +64,6 @@ var setupClient = function (username, password) {
     "use strict";
   var client;
   if((username === null) && (password === null) || (username === '') && (password === '')) {
-    client = new Client({ user: 'api-test+writeable@cos.io', password: 'UdJCKCpeYceeHa6nBvLrFCRGisne' });
       mb.window.send('setLogin', false);
   } else {
     var options_auth = { user: username, password: password };
@@ -142,5 +141,5 @@ mb.on('ready', function ready () {
 mb.on('after-create-window', function ready () {
     "use strict";
     webContents = mb.window.webContents;
-    //mb.window.openDevTools();
+    // mb.window.openDevTools();
 });
