@@ -32,6 +32,7 @@ function setState(){
         currentState.message = '';
     }
     document.getElementById('messagePane').innerHTML = currentState.message;
+
 }
 
 require('ipc').on('setLogin', function(state, message) {
