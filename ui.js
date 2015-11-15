@@ -1,6 +1,8 @@
+"use strict";
 var remote = require('remote');
 var BrowserWindow = remote.require('browser-window');
 var ipc = require('ipc');
+var uiState = require('./uiState.js');
 
 ipc.send('did-finish-load');
 
@@ -17,10 +19,51 @@ document.addEventListener('DOMContentLoaded', function () {
 
     document.getElementById('loginForm').addEventListener("submit", processLogin);
     document.getElementById('nodeChooser').addEventListener("submit", processNodeSelection);
+    setState();
 });
 
+function setState(){
+    document.getElementById('loginPane').style.display = 'none';
+    document.getElementById('nodeLocPane').style.display = 'none';
+    document.getElementById('statusPane').style.display = 'none';
+    var currentState = uiState.UIState();
+    document.getElementById(currentState.id).style.display = 'block';
+    if(typeof currentState.message === 'undefined'){
+        currentState.message = '';
+    }
+    document.getElementById('messagePane').innerHTML = currentState.message;
+}
+
+require('ipc').on('setLogin', function(state, message) {
+    uiState.loginState(state, message);
+    setState();
+});
+
+require('ipc').on('setNodeLoc', function(state, message) {
+    uiState.nodeLocState(state, message);
+    setState();
+});
+
+require('ipc').on('setToken', function(state, message) {
+    uiState.tokenState(state, message);
+    setState();
+});
+
+require('ipc').on('addStatusMessage', function(message) {
+    addStatusMessage(message);
+});
+
+var addStatusMessage = function(message){
+    if (typeof message !== "undefined"){
+        var table = document.getElementById('statusTable');
+        var row = table.insertRow(table.rows.length);
+        var cell = row.insertCell(0);
+        var cellMessage = document.createTextNode(message);
+        cell.appendChild(cellMessage);
+    }
+};
+
 function processLogin(e) {
-    "use strict";
     if (e.preventDefault) {
         e.preventDefault();
     }
@@ -37,7 +80,6 @@ function processLogin(e) {
 }
 
 function processNodeSelection(e) {
-    "use strict";
     if (e.preventDefault) {
         e.preventDefault();
     }
@@ -52,24 +94,12 @@ function processNodeSelection(e) {
     return false;
 }
 
-function chooseNode() {
-    "use strict";
-    var nodeForm = document.getElementById('nodeChooser');
-    console.log("Node chosen");
-    console.log(nodeForm);
-}
-
 require('ipc').on('getFiles', function(files) {
-  var fileList = document.createElement('ul');
-  fileList.className = 'a-list';
   for (var key in files) {
     if (files.hasOwnProperty(key)) {
-      var fileItem = document.createElement('li');
-      fileItem.innerHTML = key;
-      fileList.appendChild(fileItem);
+      addStatusMessage(key);
     }
   }
-  document.getElementsByClassName('window-content')[0].appendChild(fileList);
 });
 
 require('ipc').on('getNodes', function(nodes) {

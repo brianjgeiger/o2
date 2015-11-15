@@ -9,7 +9,8 @@ var sanitize = require('sanitize-filename');
 var nodePath = require('path');
 var foldToAscii = require('fold-to-ascii');
 
-var mbOptions = {"width": 1000, "height": 800};
+var mbOptions = {"width": 400, "height": 400};
+
 
 var mb = menuBar(mbOptions);
 var webContents = null;
@@ -65,13 +66,15 @@ ipc.on('user-login', function(ev, auth) {
 });
 
 var setupClient = function (username, password) {
+    "use strict";
   var client;
   if((username === null) && (password === null) || (username === '') && (password === '')) {
-    // client = new Client();
     client = new Client({ user: 'api-test+writeable@cos.io', password: 'UdJCKCpeYceeHa6nBvLrFCRGisne' });
+      mb.window.send('setLogin', false);
   } else {
     var options_auth = { user: username, password: password };
     client = new Client(options_auth);
+      mb.window.send('setLogin', true, 'Logged in.');
   }
   client.registerMethod("nodes", baseUrl+"nodes/", "GET");
   client.registerMethod("my_nodes", baseUrl+"users/me/nodes/?page[size]=100", "GET");
@@ -92,6 +95,8 @@ var getNodes = function () {
     showNodes(json.data);
   });
 };
+
+
 
 mb.on('ready', function ready () {
     "use strict";
@@ -126,10 +131,12 @@ mb.on('ready', function ready () {
 
     ipc.on('sync', function() {
         console.log("We should sync");
+        mb.window.send('addStatusMessage', "Syncing now…");
     });
 
     ipc.on('did-select-node', function() {
         console.log('Node selected');
+        mb.window.send('setNodeLoc', true);
     });
 
 
@@ -139,8 +146,5 @@ mb.on('ready', function ready () {
 mb.on('after-create-window', function ready () {
     "use strict";
     webContents = mb.window.webContents;
-    mb.window.openDevTools();
-    //webContents.on('did-finish-load', function() {
-    //    console.log("Content finished loading");
-    // });
+    //mb.window.openDevTools();
 });
