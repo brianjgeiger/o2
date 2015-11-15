@@ -44,11 +44,24 @@ var getNodeFiles = function(nodeId) {
       } else {
         safeFilename = sanitizedName;
       }
-      // if (safeFilename != file.attributes.name) {
-      //   mb._window.
-      // }
+      if (safeFilename != file.attributes.name) {
+        var args = {
+            'data': {
+              'action': 'rename',
+              'rename': safeFilename
+            },
+            'headers': {
+              'Content-Type': 'application/vnd.api+json'
+            }
+        };
+        mb.window._client.post(file.links.move, args, function(data, response) {
+          var parsedData = JSON.parse(data.toString());
+          mb.window.send('addStatusMessage', 'Renamed '+ parsedData.data.id+' to '+parsedData.data.attributes.name);
+        });
+      }
       files[safeFilename] = _.extend(file.attributes, file.links);
     });
+    mb.window.send('gotRemoteFileList', files);
   });
 };
 
@@ -156,5 +169,5 @@ mb.on('ready', function ready () {
 mb.on('after-create-window', function ready () {
     "use strict";
     webContents = mb.window.webContents;
-    //mb.window.openDevTools();
+    // mb.window.openDevTools();
 });
