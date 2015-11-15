@@ -4,7 +4,7 @@ var shell = require('shell');
 var ipc = require('ipc');
 var fs = require('fs-promise');
 var app = require('app');
-var mbOptions = {"width": 1000, "height": 800};
+var mbOptions = {"width": 400, "height": 400};
 
 var mb = menuBar(mbOptions);
 var webContents = null;
@@ -107,8 +107,5 @@ mb.on('ready', function ready () {
 mb.on('after-create-window', function ready () {
     "use strict";
     webContents = mb.window.webContents;
-    mb.window.openDevTools();
-    //webContents.on('did-finish-load', function() {
-    //    console.log("Content finished loading");
-    // });
+    //mb.window.openDevTools();
 });

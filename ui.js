@@ -28,6 +28,9 @@ function setState(){
     document.getElementById('statusPane').style.display = 'none';
     var currentState = uiState.UIState();
     document.getElementById(currentState.id).style.display = 'block';
+    if(typeof currentState.message === 'undefined'){
+        currentState.message = '';
+    }
     document.getElementById('messagePane').innerHTML = currentState.message;
 }
 
