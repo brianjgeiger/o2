@@ -35,6 +35,10 @@ function setState(){
 
 }
 
+require('ipc').on('setEmailField', function(email) {
+    document.getElementById('emailField').value = email;
+});
+
 require('ipc').on('setLogin', function(state, message) {
     uiState.loginState(state, message);
     setState();

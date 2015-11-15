@@ -8,10 +8,13 @@ var _ = require('underscore');
 var sanitize = require('sanitize-filename');
 var nodePath = require('path');
 var foldToAscii = require('fold-to-ascii');
+var ConfigStore = require('configstore');
+var pkg = require('./package.json');
 
 var mbOptions = {"width": 400, "height": 400};
 
-
+var appSettings = new ConfigStore(pkg.name);
+var userSettings = null;
 var mb = menuBar(mbOptions);
 var webContents = null;
 
@@ -57,6 +60,7 @@ var showFiles = function(files){
 ipc.on('user-login', function(ev, auth) {
   console.log('caught user-login');
   setupClient(auth.username, auth.password);
+  appSettings.set('lastUsername', auth.username);
   getNodes();
 });
 
@@ -69,11 +73,18 @@ var setupClient = function (username, password) {
   } else {
     var options_auth = { user: username, password: password };
     client = new Client(options_auth);
-      mb.window.send('setLogin', true, 'Logged in.');
+    client.registerMethod('me', baseUrl+'users/me/', 'GET');
+    client.methods.me(function(data, response) {
+        var json = JSON.parse(data.toString());
+        var user_id = json.data.id;
+        userSettings = new ConfigStore(pkg.name+user_id);
+        mb.window.send('setLogin', true, 'Logged in.');
+    });
   }
   client.registerMethod("nodes", baseUrl+"nodes/", "GET");
   client.registerMethod("my_nodes", baseUrl+"users/me/nodes/?page[size]=100", "GET");
   client.registerMethod('nodeFiles', baseUrl+'nodes/${id}/files/osfstorage/?filter[kind]=file&page[size]=100', 'GET');
+
   mb.window._client = client;
   console.log('Client setup.');
 };
@@ -95,7 +106,10 @@ var getNodes = function () {
 
 mb.on('ready', function ready () {
     "use strict";
+
     ipc.on('did-finish-load',function(){
+        var email = appSettings.get('lastUsername');
+        mb.window.send('setEmailField', email);
         // getNodes();
         console.log('Starting file list');
         var path = process.cwd();
