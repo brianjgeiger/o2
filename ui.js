@@ -32,6 +32,7 @@ function setState(){
         currentState.message = '';
     }
     document.getElementById('messagePane').innerHTML = currentState.message;
+
 }
 
 require('ipc').on('setLogin', function(state, message) {
@@ -103,13 +104,13 @@ require('ipc').on('getFiles', function(files) {
 });
 
 require('ipc').on('getNodes', function(nodes) {
-    var nodeList = "<select class='form-control'>";
+    var nodeOptions = document.getElementById('nodeOptions');
+    var nodeList = '';
     for (var i = 0; i < nodes.length; i++) {
         var node = nodes[i];
         nodeList += "<option value='"+ node.id +"'>" + (node.attributes.title + " (" + node.id + ")") + "</option>";
     }
-    nodeList += "</select>";
-    document.getElementById('nodeList').innerHTML = nodeList;
+    nodeOptions.innerHTML = nodeList;
 });
 
 
