@@ -4,16 +4,49 @@ var shell = require('shell');
 var ipc = require('ipc');
 var fs = require('fs-promise');
 var app = require('app');
+var _ = require('underscore');
+var sanitize = require('sanitize-filename');
+var nodePath = require('path');
+var foldToAscii = require('fold-to-ascii');
+
 var mbOptions = {"width": 400, "height": 400};
+
 
 var mb = menuBar(mbOptions);
 var webContents = null;
 
+var baseUrl = 'https://staging-api.osf.io/v2/';
 
-var showNodes = function(nodes){
+
+var showNodes = function(nodes) {
     "use strict";
     console.log('sending getNodes to ui');
     mb.window.send('getNodes', nodes);
+};
+
+var getNodeFiles = function(nodeId) {
+  console.log('Getting node files');
+  var files = {};
+  mb.window._client.methods.nodeFiles({'path':{'id': nodeId}}, function(data, response) {
+    var fileData = JSON.parse(data.toString());
+    var increment = 1;
+    _.each(fileData.data, function(file) {
+      var safeFilename;
+      var sanitizedName = sanitize(foldToAscii.fold(file.attributes.name));
+      var currentFilenames = _.keys(files);
+      if(_.contains(currentFilenames, sanitizedName)) {
+        var parsedName = nodePath.parse(sanitizedName);
+        safeFilename = parsedName.name+'_'+increment+parsedName.ext;
+        increment+=1;
+      } else {
+        safeFilename = sanitizedName;
+      }
+      // if (safeFilename != file.attributes.name) {
+      //   mb._window.
+      // }
+      files[safeFilename] = _.extend(file.attributes, file.links);
+    });
+  });
 };
 
 var showFiles = function(files){
@@ -30,16 +63,17 @@ ipc.on('user-login', function(ev, auth) {
 var setupClient = function (username, password) {
     "use strict";
   var client;
-  if((username === null) && (password === null)) {
-    client = new Client();
+  if((username === null) && (password === null) || (username === '') && (password === '')) {
+    client = new Client({ user: 'api-test+writeable@cos.io', password: 'UdJCKCpeYceeHa6nBvLrFCRGisne' });
       mb.window.send('setLogin', false);
   } else {
     var options_auth = { user: username, password: password };
     client = new Client(options_auth);
       mb.window.send('setLogin', true, 'Logged in.');
   }
-  client.registerMethod("nodes", "https://staging-api.osf.io/v2/nodes/", "GET");
-  client.registerMethod("my_nodes", "https://staging-api.osf.io/v2/users/me/nodes/?page[size]=100", "GET");
+  client.registerMethod("nodes", baseUrl+"nodes/", "GET");
+  client.registerMethod("my_nodes", baseUrl+"users/me/nodes/?page[size]=100", "GET");
+  client.registerMethod('nodeFiles', baseUrl+'nodes/${id}/files/osfstorage/?filter[kind]=file&page[size]=100', 'GET');
   mb.window._client = client;
   console.log('Client setup.');
 };
@@ -95,9 +129,10 @@ mb.on('ready', function ready () {
         mb.window.send('addStatusMessage', "Syncing now…");
     });
 
-    ipc.on('did-select-node', function() {
+    ipc.on('did-select-node', function(ev, nodeId) {
         console.log('Node selected');
         mb.window.send('setNodeLoc', true);
+        getNodeFiles(nodeId);
     });
 
 
