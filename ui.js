@@ -114,7 +114,6 @@ require('ipc').on('getNodes', function(nodes) {
 
 
 function selectNode(nodeId){
-    console.log(nodeId);
     ipc.send('did-select-node', nodeId);
 }
 

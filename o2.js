@@ -49,11 +49,6 @@ var getNodeFiles = function(nodeId) {
   });
 };
 
-ipc.on('did-select-node', function(ev, nodeId) {
-  console.log('caught did-select-node: ', nodeId);
-  getNodeFiles(nodeId);
-});
-
 var showFiles = function(files){
     "use strict";
     mb.window.send('getFiles', files);
@@ -134,9 +129,10 @@ mb.on('ready', function ready () {
         mb.window.send('addStatusMessage', "Syncing now…");
     });
 
-    ipc.on('did-select-node', function() {
+    ipc.on('did-select-node', function(ev, nodeId) {
         console.log('Node selected');
         mb.window.send('setNodeLoc', true);
+        getNodeFiles(nodeId);
     });
 
 
