@@ -1,63 +1,71 @@
 <!DOCTYPE html>
 <html lang="en">
-    <head>
-        <meta charset="UTF-8">
-        <title>Test</title>
-        <link rel="stylesheet" href="node_modules/font-awesome/css/font-awesome.min.css">
-        <link rel="stylesheet" href="photon-0.1.2-dist/css/photon.min.css">
-        <script src="ui.js" charset="utf-8"></script>
-    </head>
-    <body>
-   <div class="window">
+<head>
+    <meta charset="UTF-8">
+    <title>Test</title>
+    <link rel="stylesheet" href="node_modules/font-awesome/css/font-awesome.min.css">
+    <link rel="stylesheet" href="photon-0.1.2-dist/css/photon.min.css">
+    <script src="ui.js" charset="utf-8"></script>
+</head>
+<body>
+<div class="window">
 
-      <!-- .toolbar-header sits at the top of your app -->
-      <header class="toolbar toolbar-header">
-          <h1 class="title">OSF Offline</h1>
-
-          <div class="toolbar-actions" id="toolbarButtons">
+    <!-- .toolbar-header sits at the top of your app -->
+    <header class="toolbar toolbar-header">
+        <h1 class="title">OSF Offline</h1>
+        <button class="btn btn-default" id="exitButton">
+            Quit OSF Offline
+        </button>
+        <div class="toolbar-actions" id="toolbarButtons">
             <button class="btn btn-primary pull-right" id="syncButton">
-              Sync Now
+                Sync Now
             </button>
-          </div>
-        </header>
+        </div>
+    </header>
 
 
-      <!-- Your app's content goes inside .window-content -->
-      <div class="window-content">
-          <div id="nodeChooserDiv">
-              <h2>Sync which node?</h2>
-              <form id="nodeChooser">
-                  <span id="nodeList"></span>
-                  <div class="form-actions">
+    <!-- Your app's content goes inside .window-content -->
+
+
+    <div class="window-content">
+        <div id="nodeLocPane">
+            <h2>Sync which node?</h2>
+
+            <form id="nodeChooser">
+                <span id="nodeList"></span>
+
+                <div class="form-actions">
                     <button type="submit" class="btn btn-form btn-primary">OK</button>
-                  </div>
-              </form>
-          </div>
-          <div id="loginDiv">
-              <h2>Login</h2>
-              <form id="loginForm">
-                  <div class="form-group">
+                </div>
+            </form>
+        </div>
+        <div id="loginPane">
+            <h2>Login</h2>
+
+            <form id="loginForm">
+                <div class="form-group">
                     <label>Email address</label>
                     <input type="email" class="form-control" placeholder="Email">
-                  </div>
-                  <div class="form-group">
+                </div>
+                <div class="form-group">
                     <label>Password</label>
                     <input type="password" class="form-control" placeholder="Password">
-                  </div>
-                  <div class="form-actions">
+                </div>
+                <div class="form-actions">
                     <button type="reset" class="btn btn-form btn-default">Cancel</button>
                     <button type="submit" class="btn btn-form btn-primary">OK</button>
-                  </div>
-              </form>
-          </div>
+                </div>
+            </form>
+        </div>
+        <div id="statusPane">
 
-      </div>
-       <footer class="toolbar toolbar-footer">
-            <button class="btn btn-default" id="exitButton">
-              Quit OSF Offline
-            </button>
-        </footer>
+        </div>
+
     </div>
+    <footer class="toolbar toolbar-footer">
+        <span class="alertMessage" id="messagePane"></span>
+    </footer>
+</div>
 
-    </body>
+</body>
 </html>

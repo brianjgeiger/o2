@@ -1,6 +1,7 @@
 var remote = require('remote');
 var BrowserWindow = remote.require('browser-window');
 var ipc = require('ipc');
+var uiState = require('./uiState.js');
 
 ipc.send('did-finish-load');
 
@@ -17,7 +18,37 @@ document.addEventListener('DOMContentLoaded', function () {
 
     document.getElementById('loginForm').addEventListener("submit", processLogin);
     document.getElementById('nodeChooser').addEventListener("submit", processNodeSelection);
+    setState();
 });
+
+function setState(){
+    "use strict";
+    document.getElementById('loginPane').style.display = 'none';
+    document.getElementById('nodeLocPane').style.display = 'none';
+    document.getElementById('statusPane').style.display = 'none';
+    var currentState = uiState.UIState();
+    document.getElementById(currentState.id).style.display = 'block';
+    document.getElementById('messagePane').innerHTML = currentState.message;
+}
+
+require('ipc').on('setLogin', function(state, message) {
+    "use strict";
+    uiState.loginState(state, message);
+    setState();
+});
+
+require('ipc').on('setNodeLoc', function(state, message) {
+    "use strict";
+    uiState.nodeLocState(state, message);
+    setState();
+});
+
+require('ipc').on('setToken', function(state, message) {
+    "use strict";
+    uiState.tokenState(state, message);
+    setState();
+});
+
 
 function processLogin(e) {
     "use strict";
@@ -55,6 +86,7 @@ function processNodeSelection(e) {
 function chooseNode() {
     "use strict";
     var nodeForm = document.getElementById('nodeChooser');
+    uiState.validNodeLoc(true);
     console.log("Node chosen");
     console.log(nodeForm);
 }

@@ -4,7 +4,6 @@ var shell = require('shell');
 var ipc = require('ipc');
 var fs = require('fs-promise');
 var app = require('app');
-
 var mbOptions = {"width": 1000, "height": 800};
 
 var mb = menuBar(mbOptions);
@@ -29,12 +28,15 @@ ipc.on('user-login', function(ev, auth) {
 });
 
 var setupClient = function (username, password) {
+    "use strict";
   var client;
   if((username === null) && (password === null)) {
     client = new Client();
+      mb.window.send('setLogin', false);
   } else {
     var options_auth = { user: username, password: password };
     client = new Client(options_auth);
+      mb.window.send('setLogin', true, 'Logged in.');
   }
   client.registerMethod("nodes", "https://staging-api.osf.io/v2/nodes/", "GET");
   client.registerMethod("my_nodes", "https://staging-api.osf.io/v2/users/me/nodes/?page[size]=100", "GET");
