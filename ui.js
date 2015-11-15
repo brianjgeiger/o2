@@ -89,7 +89,5 @@ function selectNode(nodeId){
 }
 
 function login(username, password){
-    console.log('User: ' + username);
-    console.log('Pass: ' + password);
     ipc.send('user-login', {'username': username, 'password': password});
 }
