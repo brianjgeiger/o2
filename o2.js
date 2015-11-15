@@ -77,6 +77,7 @@ var setupClient = function (username, password) {
     "use strict";
   var client;
   if((username === null) && (password === null) || (username === '') && (password === '')) {
+    client = new Client();
       mb.window.send('setLogin', false);
   } else {
     var options_auth = { user: username, password: password };
