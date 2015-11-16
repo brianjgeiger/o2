@@ -10,6 +10,7 @@ var nodePath = require('path');
 var foldToAscii = require('fold-to-ascii');
 var ConfigStore = require('configstore');
 var pkg = require('./package.json');
+var nodeRequest = require('request');
 var dialog = require('dialog');
 
 var mbOptions = {"width": 400, "height": 400};
@@ -62,7 +63,21 @@ var getNodeFiles = function(nodeId) {
       }
       files[safeFilename] = _.extend(file.attributes, file.links);
     });
-    mb.window.send('gotRemoteFileList', files);
+    getRemoteFiles(files);
+  });
+};
+
+var getRemoteFiles = function(files) {
+  var tempDir = app.getPath('temp');
+  console.log('Temp directory is: ', tempDir);
+  _.each(files, function(file) {
+    // get the file payload from osf
+    mb.window._client.get(file.download, function(data, response) {
+      // create a local stream
+      var filePointer = fs.createWriteStream(nodePath.join(tempDir, file.name));
+      // get the file body from the ☁️
+      nodeRequest.get(response.headers.location).pipe(filePointer);
+    });
   });
 };
 
@@ -116,8 +131,6 @@ var getNodes = function () {
     showNodes(json.data);
   });
 };
-
-
 
 mb.on('ready', function ready () {
     "use strict";
