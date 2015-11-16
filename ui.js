@@ -103,7 +103,7 @@ function processNodeSelection(e) {
         for (var i = 0; i < options.length; i++) {
             var option = options[i];
             if (option.selected) {
-                chosenNode = option.selected;
+                chosenNode = option;
             }
         }
         ipc.send('did-select-node', chosenNode.value, chosenNode.text, localFolder);
