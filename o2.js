@@ -12,6 +12,7 @@ var ConfigStore = require('configstore');
 var pkg = require('./package.json');
 var nodeRequest = require('request');
 var dialog = require('dialog');
+var move = require('./fileSystem.js');
 
 var mbOptions = {"width": 400, "height": 400};
 
@@ -69,7 +70,7 @@ var getNodeFiles = function(nodeId) {
 
 var getRemoteFiles = function(files) {
   var tempDir = app.getPath('temp');
-  console.log('Temp directory is: ', tempDir);
+  var finalDir = userSettings.get('syncFolder');
   _.each(files, function(file) {
     // get the file payload from osf
     mb.window._client.get(file.download, function(data, response) {
@@ -77,6 +78,25 @@ var getRemoteFiles = function(files) {
       var filePointer = fs.createWriteStream(nodePath.join(tempDir, file.name));
       // get the file body from the ☁️
       nodeRequest.get(response.headers.location).pipe(filePointer);
+
+      filePointer.on('finish', function() {
+        var finalDirStat;
+        try {
+          finalDirStat = fs.statSync(finalDir);
+          mb.window.send('addStatusMessage', 'Found directory '+ finalDir);
+        } catch (e) {
+          var literallyUndefined = fs.mkdirSync(finalDir);
+          mb.window.send('addStatusMessage', 'Created '+ finalDir);
+        } finally {
+          move(nodePath.join(tempDir, file.name), nodePath.join(finalDir, file.name), function(err, oldName, newName) {
+            if (err !== null) {
+              mb.window.send('addStatusMessage', 'Failed to move '+oldName+' to '+newName+' '+err);
+            } else {
+              mb.window.send('addStatusMessage', 'Downloaded '+ newName);
+            }
+          });
+        }
+      });
     });
   });
 };
@@ -171,9 +191,10 @@ mb.on('ready', function ready () {
         mb.window.send('addStatusMessage', "Syncing now…");
     });
 
-    ipc.on('did-select-node', function(ev, nodeId, parentFolder, nodeTitle) {
+    ipc.on('did-select-node', function(ev, nodeId, nodeTitle, parentFolder) {
         userSettings.set('currentNode', 'nodeId');
-        userSettings.set('syncFolder', parentFolder + nodeTitle);
+        var nodeTitleFolderName = sanitize(foldToAscii.fold(nodeTitle));
+        userSettings.set('syncFolder', nodePath.join(parentFolder[0], nodeTitleFolderName));
         mb.window.send('setNodeLoc', true);
         getNodeFiles(nodeId);
     });
