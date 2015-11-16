@@ -10,6 +10,7 @@ var nodePath = require('path');
 var foldToAscii = require('fold-to-ascii');
 var ConfigStore = require('configstore');
 var pkg = require('./package.json');
+var dialog = require('dialog');
 
 var mbOptions = {"width": 400, "height": 400};
 
@@ -44,7 +45,7 @@ var getNodeFiles = function(nodeId) {
       } else {
         safeFilename = sanitizedName;
       }
-      if (safeFilename != file.attributes.name) {
+      if (safeFilename !== file.attributes.name) {
         var args = {
             'data': {
               'action': 'rename',
@@ -95,7 +96,8 @@ var setupClient = function (username, password) {
     });
   }
   client.registerMethod("nodes", baseUrl+"nodes/", "GET");
-  client.registerMethod("my_nodes", baseUrl+"users/me/nodes/?page[size]=100", "GET");
+  client.registerMethod("myNodes", baseUrl+"users/me/nodes/?page[size]=100", "GET");
+  client.registerMethod("nodeOptions", baseUrl+'nodes/${id}', 'OPTIONS');
   client.registerMethod('nodeFiles', baseUrl+'nodes/${id}/files/osfstorage/?filter[kind]=file&page[size]=100', 'GET');
 
   mb.window._client = client;
@@ -108,7 +110,7 @@ var getNodes = function () {
     setupClient();
   }
   console.log('making http request');
-  mb.window._client.methods.my_nodes(function(data, response) {
+  mb.window._client.methods.myNodes(function(data, response) {
     var json = JSON.parse(data.toString());
     console.log('got http response');
     showNodes(json.data);
@@ -128,7 +130,7 @@ mb.on('ready', function ready () {
         var path = process.cwd();
 
         // readdir requires a trailing slash.
-        if (path.substr(path.length-1) != '/') {
+        if (path.substr(path.length-1) !== '/') {
           path = path + '/';
         }
 
@@ -156,10 +158,17 @@ mb.on('ready', function ready () {
         mb.window.send('addStatusMessage', "Syncing now…");
     });
 
-    ipc.on('did-select-node', function(ev, nodeId) {
-        console.log('Node selected');
+    ipc.on('did-select-node', function(ev, nodeId, parentFolder, nodeTitle) {
+        userSettings.set('currentNode', 'nodeId');
+        userSettings.set('syncFolder', parentFolder + nodeTitle);
         mb.window.send('setNodeLoc', true);
         getNodeFiles(nodeId);
+    });
+
+    ipc.on('choose-local-folder', function(){
+       dialog.showOpenDialog(mb.window, {properties: ['openDirectory']}, function (folderPath) {
+           mb.window.send('setLocalFolder', folderPath);
+        });
     });
 
 
@@ -169,5 +178,5 @@ mb.on('ready', function ready () {
 mb.on('after-create-window', function ready () {
     "use strict";
     webContents = mb.window.webContents;
-    // mb.window.openDevTools();
+     //mb.window.openDevTools();
 });

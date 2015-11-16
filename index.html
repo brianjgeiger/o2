@@ -34,9 +34,13 @@
                 <span id="nodeList"></span>
 
                 <div class="form-actions">
-                    <select class='form-control' id="nodeOptions">
+                    <div><select class='form-control' id="nodeOptions">
                         <option value=''>Loading data from OSF…</option>
                     </select>
+                    </div>
+                    <div>
+                        <button id="setLocalFolderButton" onclick="chooseLocalFolder();">Choose local folder</button> <span id="localFolderSpan"></span>
+                    </div>
                     <button type="submit" class="btn btn-form btn-primary">OK</button>
                 </div>
             </form>

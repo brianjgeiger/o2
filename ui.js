@@ -6,7 +6,7 @@ var uiState = require('./uiState.js');
 
 ipc.send('did-finish-load');
 
-
+var localFolder = null;
 
 // Add the listener
 document.addEventListener('DOMContentLoaded', function () {
@@ -68,6 +68,15 @@ var addStatusMessage = function(message){
     }
 };
 
+function chooseLocalFolder(){
+    ipc.send('choose-local-folder');
+}
+
+require('ipc').on('setLocalFolder', function(folderPath) {
+    localFolder = folderPath;
+    document.getElementById('localFolderSpan').innerText=localFolder;
+});
+
 function processLogin(e) {
     if (e.preventDefault) {
         e.preventDefault();
@@ -88,13 +97,19 @@ function processNodeSelection(e) {
     if (e.preventDefault) {
         e.preventDefault();
     }
-
-    var options = document.getElementById('nodeChooser').elements[0].options;
-    for(var i=0; i<options.length; i++){
-        var option = options[i];
-        if (option.selected){
-            selectNode(option.value);
+    if(localFolder !== null) {
+        var options = document.getElementById('nodeChooser').elements[0].options;
+        var chosenNode = null;
+        for (var i = 0; i < options.length; i++) {
+            var option = options[i];
+            if (option.selected) {
+                chosenNode = option.selected;
+            }
         }
+        ipc.send('did-select-node', chosenNode.value, chosenNode.text, localFolder);
+    }else{
+        uiState.nodeLocState(false,"Choose a local folder to sync to.");
+        setState();
     }
     return false;
 }
@@ -118,8 +133,8 @@ require('ipc').on('getNodes', function(nodes) {
 });
 
 
-function selectNode(nodeId){
-    ipc.send('did-select-node', nodeId);
+function selectNode(nodeId, nodeFolderName, parentFolderPath){
+
 }
 
 function login(username, password){
