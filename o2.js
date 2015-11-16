@@ -10,6 +10,7 @@ var nodePath = require('path');
 var foldToAscii = require('fold-to-ascii');
 var ConfigStore = require('configstore');
 var pkg = require('./package.json');
+var nodeRequest = require('request');
 
 var mbOptions = {"width": 400, "height": 400};
 
@@ -73,21 +74,8 @@ var getRemoteFiles = function(files) {
     mb.window._client.get(file.download, function(data, response) {
       // create a local stream
       var filePointer = fs.createWriteStream(nodePath.join(tempDir, file.name));
-      // get the file body from ☁️
-      mb.window._client.get(response.headers.location, function(data, resp) {
-        console.log('Writing '+file.name);
-        console.log(response.headers.location);
-
-        // stream style
-        resp.pipe(filePointer);
-
-        // old-style
-        // resp.on('data', function(data) {
-        //   filePointer.write(data);
-        // }).on('end', function() {
-        //   filePointer.end();
-        // })
-      });
+      // get the file body from the ☁️
+      nodeRequest.get(response.headers.location).pipe(filePointer);
     });
   });
 };
