@@ -84,12 +84,15 @@ var getRemoteFiles = function(files) {
       filePointer.on('finish', function() {
         var finalDirStat;
         try {
+          // see if the final dir exists
           finalDirStat = fs.statSync(finalDir);
           mb.window.send('addStatusMessage', 'Found directory '+ finalDir);
         } catch (e) {
+          // create it if it doesn't
           var literallyUndefined = fs.mkdirSync(finalDir);
           mb.window.send('addStatusMessage', 'Created '+ finalDir);
         } finally {
+          // move each file from tmp to final
           move(nodePath.join(tempDir, file.name), nodePath.join(finalDir, file.name), function(err, oldName, newName) {
             if (err !== null) {
               mb.window.send('addStatusMessage', 'Failed to move '+oldName+' to '+newName+' '+err);
