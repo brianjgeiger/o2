@@ -61,7 +61,34 @@ var getNodeFiles = function(nodeId) {
       }
       files[safeFilename] = _.extend(file.attributes, file.links);
     });
-    mb.window.send('gotRemoteFileList', files);
+    getRemoteFiles(files);
+  });
+};
+
+var getRemoteFiles = function(files) {
+  var tempDir = app.getPath('temp');
+  console.log('Temp directory is: ', tempDir);
+  _.each(files, function(file) {
+    // get the file payload from osf
+    mb.window._client.get(file.download, function(data, response) {
+      // create a local stream
+      var filePointer = fs.createWriteStream(nodePath.join(tempDir, file.name));
+      // get the file body from ☁️
+      mb.window._client.get(response.headers.location, function(data, resp) {
+        console.log('Writing '+file.name);
+        console.log(response.headers.location);
+
+        // stream style
+        resp.pipe(filePointer);
+
+        // old-style
+        // resp.on('data', function(data) {
+        //   filePointer.write(data);
+        // }).on('end', function() {
+        //   filePointer.end();
+        // })
+      });
+    });
   });
 };
 
@@ -114,8 +141,6 @@ var getNodes = function () {
     showNodes(json.data);
   });
 };
-
-
 
 mb.on('ready', function ready () {
     "use strict";
