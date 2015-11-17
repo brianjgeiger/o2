@@ -35,8 +35,10 @@ var showNodes = function(nodes) {
 var getNodeFiles = function(nodeId) {
   console.log('Getting node files');
   var files = {};
+    var statusCode;
   mb.window._client.methods.nodeFiles({'path':{'id': nodeId}}, function(data, response) {
-    if(response.statusCode === 200) {
+      statusCode = response.statusCode;
+    if(statusCode === 200) {
         var fileData = JSON.parse(data.toString());
         var increment = 1;
         _.each(fileData.data, function (file) {
@@ -69,10 +71,23 @@ var getNodeFiles = function(nodeId) {
         });
         getRemoteFiles(files);
     } else{
-        userSettings.del('syncFolder');
-        userSettings.del('currentNode');
-        mb.window.send('setNodeLoc', true);
-        getNodes();
+        if (statusCode === 401) {
+            mb.window.send('setLogin', false, "Problem with your login. Please try again.");
+        } else if (statusCode === 400 || statusCode >= 500){
+            mb.window.send('setNodeLoc', true, "Problem with OSF. If it persists, contact us.");
+        }
+        else {
+            userSettings.del('syncFolder');
+            userSettings.del('currentNode');
+            var problemMessage = "Problem retrieving your node.";
+            if (statusCode === 404) {
+                problemMessage = "Could not find your node.";
+            } else if (statusCode === 403) {
+                problemMessage = "You do not have permission for this node.";
+            }
+            mb.window.send('setNodeLoc', false, problemMessage + " Please select a new node.");
+            getNodes();
+        }
     }
   });
 };
@@ -130,18 +145,23 @@ var setupClient = function (username, password) {
     client = new Client(options_auth);
     client.registerMethod('me', baseUrl+'users/me/', 'GET');
     client.methods.me(function(data, response) {
-        var json = JSON.parse(data.toString());
-        var user_id = json.data.id;
-        userSettings = new ConfigStore(pkg.name+user_id);
-        mb.window.send('setLogin', true, 'Logged in.');
-        var currentNode = userSettings.get('currentNode');
-        var syncFolder = userSettings.get('syncFolder');
-        if(currentNode && syncFolder){
-            console.log("Already have node " + currentNode + " and folder " + syncFolder);
-            mb.window.send('setNodeLoc', true);
-            getNodeFiles(currentNode);
+        if(response.statusCode === 200) {
+            var json = JSON.parse(data.toString());
+            var user_id = json.data.id;
+            userSettings = new ConfigStore(pkg.name + user_id);
+            mb.window.send('setLogin', true, 'Logged in.');
+            var currentNode = userSettings.get('currentNode');
+            //userSettings.set('currentNode','dkjgldfjg');
+            var syncFolder = userSettings.get('syncFolder');
+            if (currentNode && syncFolder) {
+                console.log("Already have node " + currentNode + " and folder " + syncFolder);
+                mb.window.send('setNodeLoc', true);
+                getNodeFiles(currentNode);
+            } else {
+                getNodes();
+            }
         } else {
-            getNodes();
+            mb.window.send('setLogin', false, "Problem with your login. Please try again.");
         }
     });
   }
