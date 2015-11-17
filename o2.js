@@ -1,3 +1,4 @@
+"use strict";
 var menuBar = require('menubar');
 var Client = require('node-rest-client').Client;
 var shell = require('shell');
@@ -27,7 +28,6 @@ var baseUrl = 'https://staging-api.osf.io/v2/';
 
 
 var showNodes = function(nodes) {
-    "use strict";
     console.log('sending getNodes to ui');
     mb.window.send('getNodes', nodes);
 };
@@ -35,38 +35,60 @@ var showNodes = function(nodes) {
 var getNodeFiles = function(nodeId) {
   console.log('Getting node files');
   var files = {};
+    var statusCode;
   mb.window._client.methods.nodeFiles({'path':{'id': nodeId}}, function(data, response) {
-    var fileData = JSON.parse(data.toString());
-    var increment = 1;
-    _.each(fileData.data, function(file) {
-      var safeFilename;
-      var sanitizedName = sanitize(foldToAscii.fold(file.attributes.name));
-      var currentFilenames = _.keys(files);
-      if(_.contains(currentFilenames, sanitizedName)) {
-        var parsedName = nodePath.parse(sanitizedName);
-        safeFilename = parsedName.name+'_'+increment+parsedName.ext;
-        increment+=1;
-      } else {
-        safeFilename = sanitizedName;
-      }
-      if (safeFilename !== file.attributes.name) {
-        var args = {
-            'data': {
-              'action': 'rename',
-              'rename': safeFilename
-            },
-            'headers': {
-              'Content-Type': 'application/vnd.api+json'
+      statusCode = response.statusCode;
+    if(statusCode === 200) {
+        var fileData = JSON.parse(data.toString());
+        var increment = 1;
+        _.each(fileData.data, function (file) {
+            var safeFilename;
+            var sanitizedName = sanitize(foldToAscii.fold(file.attributes.name));
+            var currentFilenames = _.keys(files);
+            if (_.contains(currentFilenames, sanitizedName)) {
+                var parsedName = nodePath.parse(sanitizedName);
+                safeFilename = parsedName.name + '_' + increment + parsedName.ext;
+                increment += 1;
+            } else {
+                safeFilename = sanitizedName;
             }
-        };
-        mb.window._client.post(file.links.move, args, function(data, response) {
-          var parsedData = JSON.parse(data.toString());
-          mb.window.send('addStatusMessage', 'Renamed '+ parsedData.data.id+' to '+parsedData.data.attributes.name);
+            if (safeFilename !== file.attributes.name) {
+                var args = {
+                    'data': {
+                        'action': 'rename',
+                        'rename': safeFilename
+                    },
+                    'headers': {
+                        'Content-Type': 'application/vnd.api+json'
+                    }
+                };
+                mb.window._client.post(file.links.move, args, function (data, response) {
+                    var parsedData = JSON.parse(data.toString());
+                    mb.window.send('addStatusMessage', 'Renamed ' + parsedData.data.id + ' to ' + parsedData.data.attributes.name);
+                });
+            }
+            files[safeFilename] = _.extend(file.attributes, file.links);
         });
-      }
-      files[safeFilename] = _.extend(file.attributes, file.links);
-    });
-    getRemoteFiles(files);
+        getRemoteFiles(files);
+    } else{
+        if (statusCode === 401) {
+            mb.window.send('setLogin', false, "Problem with your login. Please try again.");
+        } else if (statusCode === 400 || statusCode >= 500){
+            mb.window.send('setNodeLoc', true, "Problem with OSF. If it persists, contact us.");
+        }
+        else {
+            userSettings.del('syncFolder');
+            userSettings.del('currentNode');
+            var problemMessage = "Problem retrieving your node.";
+            if (statusCode === 404) {
+                problemMessage = "Could not find your node.";
+            } else if (statusCode === 403) {
+                problemMessage = "You do not have permission for this node.";
+            }
+            mb.window.send('setNodeLoc', false, problemMessage + " Please select a new node.");
+            getNodes();
+        }
+    }
   });
 };
 
@@ -89,6 +111,7 @@ var getRemoteFiles = function(files) {
           mb.window.send('addStatusMessage', 'Found directory '+ finalDir);
         } catch (e) {
           // create it if it doesn't
+          //  TODO: figure out what the error is if the dir can't be created, then clear syncFolder, stop transfer, and setNodeLoc to false
           var literallyUndefined = fs.mkdirSync(finalDir);
           mb.window.send('addStatusMessage', 'Created '+ finalDir);
         } finally {
@@ -107,7 +130,6 @@ var getRemoteFiles = function(files) {
 };
 
 var showFiles = function(files){
-    "use strict";
     mb.window.send('getFiles', files);
 };
 
@@ -115,11 +137,9 @@ ipc.on('user-login', function(ev, auth) {
   console.log('caught user-login');
   setupClient(auth.username, auth.password);
   appSettings.set('lastUsername', auth.username);
-  getNodes();
 });
 
 var setupClient = function (username, password) {
-    "use strict";
   var client;
   if((username === null) && (password === null) || (username === '') && (password === '')) {
     client = new Client();
@@ -129,10 +149,23 @@ var setupClient = function (username, password) {
     client = new Client(options_auth);
     client.registerMethod('me', baseUrl+'users/me/', 'GET');
     client.methods.me(function(data, response) {
-        var json = JSON.parse(data.toString());
-        var user_id = json.data.id;
-        userSettings = new ConfigStore(pkg.name+user_id);
-        mb.window.send('setLogin', true, 'Logged in.');
+        if(response.statusCode === 200) {
+            var json = JSON.parse(data.toString());
+            var user_id = json.data.id;
+            userSettings = new ConfigStore(pkg.name + user_id);
+            mb.window.send('setLogin', true, 'Logged in.');
+            var currentNode = userSettings.get('currentNode');
+            var syncFolder = userSettings.get('syncFolder');
+            if (currentNode && syncFolder) {
+                console.log("Already have node " + currentNode + " and folder " + syncFolder);
+                mb.window.send('setNodeLoc', true);
+                getNodeFiles(currentNode);
+            } else {
+                getNodes();
+            }
+        } else {
+            mb.window.send('setLogin', false, "Problem with your login. Please try again.");
+        }
     });
   }
   client.registerMethod("nodes", baseUrl+"nodes/", "GET");
@@ -158,8 +191,6 @@ var getNodes = function () {
 };
 
 mb.on('ready', function ready () {
-    "use strict";
-
     ipc.on('did-finish-load',function(){
         var email = appSettings.get('lastUsername');
         mb.window.send('setEmailField', email);
@@ -197,7 +228,7 @@ mb.on('ready', function ready () {
     });
 
     ipc.on('did-select-node', function(ev, nodeId, nodeTitle, parentFolder) {
-        userSettings.set('currentNode', 'nodeId');
+        userSettings.set('currentNode', nodeId);
         var nodeTitleFolderName = sanitize(foldToAscii.fold(nodeTitle));
         userSettings.set('syncFolder', nodePath.join(parentFolder[0], nodeTitleFolderName));
         mb.window.send('setNodeLoc', true);
@@ -236,7 +267,6 @@ mb.on('ready', function ready () {
 });
 
 mb.on('after-create-window', function ready () {
-    "use strict";
     webContents = mb.window.webContents;
      //mb.window.openDevTools();
 });
