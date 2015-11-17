@@ -152,7 +152,6 @@ var setupClient = function (username, password) {
             userSettings = new ConfigStore(pkg.name + user_id);
             mb.window.send('setLogin', true, 'Logged in.');
             var currentNode = userSettings.get('currentNode');
-            //userSettings.set('currentNode','dkjgldfjg');
             var syncFolder = userSettings.get('syncFolder');
             if (currentNode && syncFolder) {
                 console.log("Already have node " + currentNode + " and folder " + syncFolder);
