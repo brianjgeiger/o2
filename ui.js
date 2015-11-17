@@ -16,6 +16,9 @@ document.addEventListener('DOMContentLoaded', function () {
     document.querySelector('#syncButton').addEventListener('click', function (event) {
         ipc.send('sync');
     });
+    document.querySelector('#settingsButton').addEventListener('click', function (event) {
+        ipc.send('settings');
+    });
 
     document.getElementById('loginForm').addEventListener("submit", processLogin);
     document.getElementById('nodeChooser').addEventListener("submit", processNodeSelection);
