@@ -95,11 +95,11 @@ var getNodeFiles = function(nodeId) {
 var getRemoteFiles = function(files) {
   var tempDir = app.getPath('temp');
   var finalDir = userSettings.get('syncFolder');
-  _.each(files, function(file) {
+  _.each(files, function(file, sanitizedFilename) {
     // get the file payload from osf
     mb.window._client.get(file.download, function(data, response) {
       // create a local stream
-      var filePointer = fs.createWriteStream(nodePath.join(tempDir, file.name));
+      var filePointer = fs.createWriteStream(nodePath.join(tempDir, sanitizedFilename));
       // get the file body from the ☁️
       nodeRequest.get(response.headers.location).pipe(filePointer);
 
@@ -116,7 +116,7 @@ var getRemoteFiles = function(files) {
           mb.window.send('addStatusMessage', 'Created '+ finalDir);
         } finally {
           // move each file from tmp to final
-          move(nodePath.join(tempDir, file.name), nodePath.join(finalDir, file.name), function(err, oldName, newName) {
+          move(nodePath.join(tempDir, sanitizedFilename), nodePath.join(finalDir, sanitizedFilename), function(err, oldName, newName) {
             if (err !== null) {
               mb.window.send('addStatusMessage', 'Failed to move '+oldName+' to '+newName+' '+err);
             } else {
