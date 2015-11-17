@@ -227,6 +227,11 @@ mb.on('ready', function ready () {
         mb.window.send('addStatusMessage', "Syncing now…");
     });
 
+    ipc.on('settings', function() {
+        mb.window.send('setNodeLoc', false);
+        getNodes();
+    });
+
     ipc.on('did-select-node', function(ev, nodeId, nodeTitle, parentFolder) {
         userSettings.set('currentNode', nodeId);
         var nodeTitleFolderName = sanitize(foldToAscii.fold(nodeTitle));

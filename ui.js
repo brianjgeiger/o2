@@ -16,6 +16,9 @@ document.addEventListener('DOMContentLoaded', function () {
     document.querySelector('#syncButton').addEventListener('click', function (event) {
         ipc.send('sync');
     });
+    document.querySelector('#settingsButton').addEventListener('click', function (event) {
+        ipc.send('settings');
+    });
 
     document.getElementById('loginForm').addEventListener("submit", processLogin);
     document.getElementById('nodeChooser').addEventListener("submit", processNodeSelection);
@@ -26,8 +29,14 @@ function setState(){
     document.getElementById('loginPane').style.display = 'none';
     document.getElementById('nodeLocPane').style.display = 'none';
     document.getElementById('statusPane').style.display = 'none';
+    document.getElementById('settingsButton').style.visibility = 'hidden';
+    document.getElementById('syncButton').style.visibility = 'hidden';
     var currentState = uiState.UIState();
     document.getElementById(currentState.id).style.display = 'block';
+    if (document.getElementById('statusPane').style.display === 'block'){
+        document.getElementById('settingsButton').style.visibility = 'visible';
+        document.getElementById('syncButton').style.visibility = 'visible';
+    }
     if(typeof currentState.message === 'undefined'){
         currentState.message = '';
     }
