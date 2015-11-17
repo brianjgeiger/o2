@@ -109,6 +109,7 @@ var getRemoteFiles = function(files) {
           finalDirStat = fs.statSync(finalDir);
           mb.window.send('addStatusMessage', 'Found directory '+ finalDir);
         } catch (e) {
+          //  TODO: figure out what the error is if the dir can't be created, then clear syncFolder, stop transfer, and setNodeLoc to false
           var literallyUndefined = fs.mkdirSync(finalDir);
           mb.window.send('addStatusMessage', 'Created '+ finalDir);
         } finally {
