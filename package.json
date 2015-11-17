@@ -11,7 +11,7 @@
     "font-awesome": "^4.4.0",
     "fs-promise": "^0.3.1",
     "jsdom": "^3.1.2",
-    "menubar": "*",
+    "menubar": "^2.3.0",
     "node-rest-client": "^1.5.1",
     "osf-client": "git@github.com:cwisecarver/osf.io-js-api-client.git",
     "promise": "^7.0.4",
@@ -20,13 +20,16 @@
     "underscore": "^1.8.3"
   },
   "devDependencies": {
+    "chai": "^3.4.0",
     "electron-packager": "^5.1.0",
-    "electron-prebuilt": "^0.34.1"
+    "electron-prebuilt": "^0.34.1",
+    "mocha": "^2.3.3"
   },
   "main": "o2.js",
   "scripts": {
-    "build-osx": "electron-packager . o2 --platform=darwin --arch=x64 --version=0.34.1 --icon=Icon.icns --out=build/Release/ --overwrite --ignore='./build/Release$'",
-    "build-win": "electron-packager . o2 --platform=win32 --arch=all --version=0.34.1 --out=build/Release/ --overwrite --ignore='./build/Release$'",
-    "start": "electron ."
+    "build-osx": "electron-packager . o2 --platform=darwin --arch=x64 --version=0.34.1 --icon=Icon.icns --out=build/Release/ --overwrite --ignore='./build/Release$' --ignore'./test$",
+    "build-win": "electron-packager . o2 --platform=win32 --arch=all --version=0.34.1 --out=build/Release/ --overwrite --ignore='./build/Release$' ",
+    "start": "electron .",
+    "test": "./node_modules/.bin/mocha --reporter spec"
   }
 }
